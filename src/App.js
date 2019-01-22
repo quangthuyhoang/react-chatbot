@@ -29,20 +29,14 @@ class App extends Component {
     })
   }
 
-  test(e,a) {
-    if(e) {
-      console.log('err ' + e)
-      return;
-    }
-    return 'bot responsded';
-  }
   handleComplete(err, confirmation) {
     if (err) {
-      alert('bot conversation failed');
-      return;
+        alert('bot conversation failed')
+        return;
     }
-    console.log('Success: ' + JSON.stringify(confirmation, 2));
-    return 'bot responsded';
+    alert('done: ' + JSON.stringify(confirmation, null, 2));
+
+    return 'Trip booked. Thank you! what would you like to do next?';
   }
 
   async submitMessage() {
@@ -59,13 +53,45 @@ class App extends Component {
       input: ''
     })
     const response = await Interactions.send("CareerAvatar", input);
-    const responseMessage = new Message({
-      id: 1,
-      message: response.message,
-    })
-    messages  = [...this.state.messages, responseMessage]
-    this.setState({ messages })
+    if (response.dialogState === 'Fulfilled') {
+      console.log(response)
+      console.log(response.intentName === "GetBotCommands")
+      let finalMessage = response.message;
+      if(response.intentName) {
+        console.log("We're inide")
+        if (response.intentName === "GetBotCommands") {
+          let text = response.message.split("'").join("\"");
+          console.log("text", text);
+          const { 
+            main,
+            contentlist
+          } = JSON.parse(text);
+          console.log("main", main)
+          console.log("contentlist", contentlist)
+          let commands = '';
+          for(let i = 0; i < contentlist.length; i++) {
+            if (i < contentlist.length - 1) {
+              commands += contentlist[i] + ', '
+            } else {
+              commands += ' and' + contentlist[i] +'.';
+            }
+          }
+          finalMessage = main + ' ' + commands;
+          // console.log("This should be parse", text);
+        }
+      }
 
+      const responseMessage = new Message({
+        id: this.state.messages.length,
+        message: finalMessage,
+      })
+      messages  = [...this.state.messages, responseMessage];
+      this.setState({ finalMessage })
+    }
+
+ 
+    this.setState({ messages })
+    console.log(response)
     // if (response.dialogState === 'Fulfilled') {
     //   if (response.intentName === 'BookTripBookHotel') {
     //     const { slots: { BookTripCheckInDate, BookTripLocation, BookTripNights, BookTripRoomType } } = response
@@ -76,21 +102,16 @@ class App extends Component {
   }
 
   render() {
-    // const userInput = "I want to reserve a hotel for tonight";
-
-    // Provide a bot name and user input
-        // const response = await Interactions.send("BookTrip", userInput);
-    
-    // Log chatbot response
-    // console.log (response.message);
     return (
    
       <div className="App">
         <header className="App-header">
           {/* <img src={logo} className="App-logo" alt="logo" /> */}
           <ChatFeed
+     
           messages={this.state.messages}
           hasInputField={false}
+          maxHeight={500}
           // bubbleStyles={styles.bubbleStyles}
         />
 
@@ -100,26 +121,8 @@ class App extends Component {
           style={styles.input}
           value={this.state.input}
         />
-          <ChatBot
-            title="My Bot"
-            // theme={myTheme}
-            botName="CareerAvatar"
-            // welcomeMessage="Welcome, how can I help you today?"
-            onComplete={this.handleComplete.bind(this)}
-            clearOnComplete={true}
-            // conversationModeOn={false}
-          />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
+    
+      
         </header>
       </div>
     );
