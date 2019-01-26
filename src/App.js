@@ -40,7 +40,8 @@ class App extends Component {
   }
 
   async submitMessage() {
-    const { input } = this.state
+    const { input } = this.state;
+    let finalMessage;
     if (input === '') return
     const message = new Message({
       id: 0,
@@ -54,51 +55,44 @@ class App extends Component {
     })
     const response = await Interactions.send("CareerAvatar", input);
     if (response.dialogState === 'Fulfilled') {
-      console.log(response)
-      console.log(response.intentName === "GetBotCommands")
-      let finalMessage = response.message;
+
+      finalMessage = response.message;
       if(response.intentName) {
-        console.log("We're inide")
+  
         if (response.intentName === "GetBotCommands") {
           let text = response.message.split("'").join("\"");
-          console.log("text", text);
           const { 
             main,
             contentlist
           } = JSON.parse(text);
-          console.log("main", main)
-          console.log("contentlist", contentlist)
+
           let commands = '';
           for(let i = 0; i < contentlist.length; i++) {
             if (i < contentlist.length - 1) {
               commands += contentlist[i] + ', '
             } else {
-              commands += ' and' + contentlist[i] +'.';
+              commands += ' and ' + contentlist[i] +'.';
             }
           }
           finalMessage = main + ' ' + commands;
-          // console.log("This should be parse", text);
         }
-      }
-
-      const responseMessage = new Message({
-        id: this.state.messages.length,
-        message: finalMessage,
-      })
-      messages  = [...this.state.messages, responseMessage];
-      this.setState({ finalMessage })
+      }  
     }
 
- 
+    if (response.dialogState === 'ElicitIntent') {
+      if (response.intentName === null) {
+        finalMessage = response.message;
+      }
+    }
+
+    const responseMessage = new Message({
+      id: this.state.messages.length,
+      message: finalMessage,
+    })
+    messages  = [...this.state.messages, responseMessage];
+
+    this.setState({ finalMessage })
     this.setState({ messages })
-    console.log(response)
-    // if (response.dialogState === 'Fulfilled') {
-    //   if (response.intentName === 'BookTripBookHotel') {
-    //     const { slots: { BookTripCheckInDate, BookTripLocation, BookTripNights, BookTripRoomType } } = response
-    //     const finalMessage = `Congratulations! Your trip to ${BookTripLocation}  with a ${BookTripRoomType} rooom on ${BookTripCheckInDate} for ${BookTripNights} days has been booked!!`
-    //     this.setState({ finalMessage })
-    //   }
-    // }
   }
 
   render() {
@@ -108,7 +102,7 @@ class App extends Component {
         <header className="App-header">
           {/* <img src={logo} className="App-logo" alt="logo" /> */}
           <ChatFeed
-     
+          
           messages={this.state.messages}
           hasInputField={false}
           maxHeight={500}
