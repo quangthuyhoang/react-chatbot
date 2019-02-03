@@ -1,0 +1,29 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
+    chatPanel: {
+        border: '1px solid',
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        overflow: 'hidden',
+        backgroundColor: 'whitesmoke',
+    },
+    chatHistory: { overflow: 'auto' },
+    chatbubbleWrapper: {
+        marginTop: 10,
+        marginBottom: 10,
+        overflow: 'auto',
+        position: 'relative'
+    },
+    img: {
+        borderRadius: 100,
+        bottom: 0,
+        left: 0,
+        position: 'absolute',
+        width: 36,
+        zIndex: 100
+    }
+};
+//# sourceMappingURL=styles.js.map
